@@ -1,29 +1,46 @@
 from flask import Flask, request
+import os
+import gspread
+from google.oauth2.service_account import Credentials
 
 app = Flask(__name__)
+
+# Setup credentials
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+SERVICE_ACCOUNT_FILE = "/etc/secrets/credentials.json"  # Path used by Render
+
+SPREADSHEET_ID = "1XXUKcnOUttzd4VlwjEP7PCnF3Eh0YxEuElJDFBQ4o_M"
+SHEET_NAME = "gmass"
+
+# Authenticate and open worksheet
+creds = Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE, scopes=SCOPES
+)
+gc = gspread.authorize(creds)
+worksheet = gc.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
 
 @app.route('/notify', methods=['GET', 'POST'])
 def notify():
     if request.method == 'POST':
-        # Try form first, fallback to json if needed
-        email = request.form.get('EmailAddress') or (request.json.get('EmailAddress') if request.json else None)
-        campaign = request.form.get('CampaignID') or (request.json.get('CampaignID') if request.json else None)
-        useragent = request.form.get('UserAgent') or (request.json.get('UserAgent') if request.json else None)
-        timestamp = request.form.get('TimeStamp') or (request.json.get('TimeStamp') if request.json else None)
-    else:  # GET method
-        email = request.args.get('EmailAddress')
-        campaign = request.args.get('CampaignID')
-        useragent = request.args.get('UserAgent')
-        timestamp = request.args.get('TimeStamp')
-    print(email, campaign, useragent, timestamp)
-    # TODO: Save to DB, Google Sheets, etc.
-    return 'OK'
+        data = request.form or request.json or {}
+    else:
+        data = request.args
+
+    email = data.get('EmailAddress', '')
+    campaign = data.get('CampaignID', '')
+    useragent = data.get('UserAgent', '')
+    timestamp = data.get('TimeStamp', '')
+
+    # Append to spreadsheet
+    worksheet.append_row([email, campaign, useragent, timestamp])
+    print(f"Logged to sheet: {email}, {campaign}, {useragent}, {timestamp}")
+
+    return "Logged to Google Sheet!"
 
 @app.route('/')
 def health():
-    return 'Render is up!'
+    return "Render Webhook is live!"
 
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host="0.0.0.0", port=port)
