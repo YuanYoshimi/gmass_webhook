@@ -31,9 +31,16 @@ def notify():
     useragent = data.get('UserAgent', '')
     timestamp = data.get('TimeStamp', '')
 
+    # Determine if the open is likely human
+    useragent_lower = useragent.lower()
+    if any(client in useragent_lower for client in ['outlook', 'thunderbird', 'foxmail', 'windows nt', 'macintosh']):
+        likely_human = 'Yes'
+    else:
+        likely_human = 'No'
+
     # Append to spreadsheet
-    worksheet.append_row([email, campaign, useragent, timestamp])
-    print(f"Logged to sheet: {email}, {campaign}, {useragent}, {timestamp}")
+    worksheet.append_row([email, campaign, useragent, timestamp, likely_human])
+    print(f"Logged to sheet: {email}, {campaign}, {useragent}, {timestamp}, Likely Human: {likely_human}")
 
     return "Logged to Google Sheet!"
 
