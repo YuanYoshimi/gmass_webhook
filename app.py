@@ -26,15 +26,16 @@ def notify():
     else:
         data = request.args
 
+    # Extract store_id from email
+    store_id = email.split('@')[0] if '@' in email else ''
     email = data.get('EmailAddress', '')
     campaign = data.get('CampaignID', '')
     useragent = data.get('UserAgent', '')
     timestamp = data.get('TimeStamp', '')
 
-
     # Append to spreadsheet with reason
-    worksheet.append_row([email, campaign, useragent, timestamp])
-    print(f"Logged to sheet: {email}, {campaign}, {useragent}, {timestamp}")
+    worksheet.append_row([store_id, email, campaign, useragent, timestamp])
+    print(f"Logged to sheet: {store_id}, {email}, {campaign}, {useragent}, {timestamp}")
 
     return "Logged to Google Sheet!"
 
