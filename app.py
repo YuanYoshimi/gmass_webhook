@@ -31,27 +31,10 @@ def notify():
     useragent = data.get('UserAgent', '')
     timestamp = data.get('TimeStamp', '')
 
-    # Determine if the open is likely human with advanced Apple MPP heuristics
-    ua = useragent.lower()
-    reason = ""
-
-    if (
-        ("applewebkit" in ua and any(d in ua for d in ["macintosh", "iphone", "ipad"]) and not any(c in ua for c in ["outlook", "thunderbird", "foxmail"]))
-        or len(ua) > 200
-        or ("chrome/42.0" in ua and "edge/12.246" in ua)
-    ):
-        likely_human = "No"
-        reason = "Likely Apple MPP or bot (pattern match or long UA)"
-    elif any(client in ua for client in ["outlook", "thunderbird", "foxmail"]):
-        likely_human = "Yes"
-        reason = "Recognized human email client"
-    else:
-        likely_human = "Maybe"
-        reason = "Unrecognized UA pattern"
 
     # Append to spreadsheet with reason
-    worksheet.append_row([email, campaign, useragent, timestamp, likely_human, reason])
-    print(f"Logged to sheet: {email}, {campaign}, {useragent}, {timestamp}, Likely Human: {likely_human}, Reason: {reason}")
+    worksheet.append_row([email, campaign, useragent, timestamp])
+    print(f"Logged to sheet: {email}, {campaign}, {useragent}, {timestamp}")
 
     return "Logged to Google Sheet!"
 
