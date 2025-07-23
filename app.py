@@ -26,9 +26,9 @@ def notify():
     else:
         data = request.args
 
+    email = data.get('EmailAddress', '')
     # Extract store_id from email
     store_id = email.split('@')[0] if '@' in email else ''
-    email = data.get('EmailAddress', '')
     campaign = data.get('CampaignID', '')
     useragent = data.get('UserAgent', '')
     timestamp = data.get('TimeStamp', '')
